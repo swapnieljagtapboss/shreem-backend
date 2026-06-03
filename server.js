@@ -276,13 +276,15 @@ app.get('/candles/:symbol/:interval', async (req, res) => {
   try {
     let candles = [];
 
-    if (['1minute', '5minute', '15minute', '30minute'].includes(interval)) {
+    if (['1minute', '30minute'].includes(interval)) {
+      // Intraday candles
       const url = `https://api.upstox.com/v2/historical-candle/intraday/${encodeURIComponent(instrumentKey)}/${interval}`;
       const r = await axios.get(url, { headers: headers() });
       candles = r.data.data?.candles || [];
     } else {
+      // Historical candles — Upstox accepts: day, week, month
       const toDate = new Date().toISOString().split('T')[0];
-      const days = interval === '1day' ? 300 : interval === '1week' ? 800 : 3500;
+      const days = interval === 'day' ? 300 : interval === 'week' ? 800 : 3500;
       const fromDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       const url = `https://api.upstox.com/v2/historical-candle/${encodeURIComponent(instrumentKey)}/${interval}/${toDate}/${fromDate}`;
       const r = await axios.get(url, { headers: headers() });
